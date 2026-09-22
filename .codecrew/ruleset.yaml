@@ -12,6 +12,11 @@ summary: |
   - Import across folders with the '@/...' alias, never with '../'.
   - Type aliases are prefixed with T (TRelease, TCategory).
 
+# Each run works in a fresh git checkout without node_modules (it's git-ignored),
+# so dependencies are installed once per run, inside the sandbox (Linux binaries).
+setup:
+  - "if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi"
+
 ignore: [node_modules/, .git/, dist/, build/, .svelte-kit/, .codecrew/]
 
 structure:
