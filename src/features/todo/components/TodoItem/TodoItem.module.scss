@@ -1,0 +1,23 @@
+.item {
+	padding: 0.25rem 0;
+}
+
+.label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+}
+
+.checkbox {
+	margin: 0;
+}
+
+.text {
+	color: inherit;
+}
+
+.done {
+	text-decoration: line-through;
+	color: #888;
+}
