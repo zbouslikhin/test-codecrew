@@ -8,6 +8,11 @@
 	let draft: TSettings = $state({ ...get(settingsStore) });
 	let saved = $state(false);
 
+	// Keep the theme choice in sync when it is changed elsewhere (e.g. the nav toggle).
+	$effect(() => {
+		draft.theme = $settingsStore.theme;
+	});
+
 	const handleSubmit = (event: SubmitEvent) => {
 		event.preventDefault();
 		settingsStore.save({ ...draft, displayName: draft.displayName.trim() });
