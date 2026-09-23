@@ -1,11 +1,21 @@
 <script lang="ts">
 	import Greeting from '@/features/welcome/components/Greeting/Greeting.svelte';
 	import SettingsPage from '@/features/settings/components/SettingsPage/SettingsPage.svelte';
+	import AboutPage from '@/features/about/components/AboutPage/AboutPage.svelte';
 	import { DEFAULT_GREETING } from '@/features/welcome';
 
-	type TPage = 'home' | 'settings';
+	type TPage = 'home' | 'settings' | 'about';
 
-	const readPage = (): TPage => (window.location.hash === '#/settings' ? 'settings' : 'home');
+	const readPage = (): TPage => {
+		switch (window.location.hash) {
+			case '#/settings':
+				return 'settings';
+			case '#/about':
+				return 'about';
+			default:
+				return 'home';
+		}
+	};
 
 	let page: TPage = $state(readPage());
 
@@ -21,11 +31,14 @@
 <nav>
 	<a href="#/" aria-current={page === 'home' ? 'page' : undefined}>Home</a>
 	<a href="#/settings" aria-current={page === 'settings' ? 'page' : undefined}>Settings</a>
+	<a href="#/about" aria-current={page === 'about' ? 'page' : undefined}>About</a>
 </nav>
 
 <main>
 	{#if page === 'settings'}
 		<SettingsPage />
+	{:else if page === 'about'}
+		<AboutPage />
 	{:else}
 		<Greeting greeting={DEFAULT_GREETING} />
 	{/if}
