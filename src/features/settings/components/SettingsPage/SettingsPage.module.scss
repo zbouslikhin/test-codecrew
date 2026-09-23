@@ -1,0 +1,78 @@
+.settingsPage {
+	padding: 2rem;
+	max-width: 32rem;
+}
+
+.title {
+	margin: 0 0 1.5rem;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.fieldset {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+.label {
+	font-weight: 600;
+	padding: 0;
+	margin-bottom: 0.25rem;
+}
+
+.input {
+	padding: 0.5rem;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font: inherit;
+}
+
+.option {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.actions {
+	display: flex;
+	gap: 0.75rem;
+}
+
+.primary,
+.secondary {
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	font: inherit;
+	cursor: pointer;
+}
+
+.primary {
+	border: 1px solid #333;
+	background: #333;
+	color: #fff;
+}
+
+.secondary {
+	border: 1px solid #ccc;
+	background: transparent;
+	color: inherit;
+}
+
+.status {
+	margin: 0;
+	color: #2e7d32;
+}
