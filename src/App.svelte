@@ -3,10 +3,7 @@
 	import SettingsPage from '@/features/settings/components/SettingsPage/SettingsPage.svelte';
 	import AboutPage from '@/features/about/components/AboutPage/AboutPage.svelte';
 	import ThemeToggle from '@/features/settings/components/ThemeToggle/ThemeToggle.svelte';
-	import { syncThemeToDocument } from '@/features/settings';
 	import { DEFAULT_GREETING } from '@/features/welcome';
-
-	$effect(() => syncThemeToDocument());
 
 	type TPage = 'home' | 'settings' | 'about';
 
