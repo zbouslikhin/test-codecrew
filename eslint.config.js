@@ -5,7 +5,8 @@ import globals from 'globals';
 import ts from 'typescript-eslint';
 
 export default ts.config(
-	{ ignores: ['node_modules/', 'dist/', 'build/', '.svelte-kit/', '.codecrew/'] },
+	// *.generated.ts: machine-written code (e.g. API types), not held to hand-written rules.
+	{ ignores: ['node_modules/', 'dist/', 'build/', '.svelte-kit/', '.codecrew/', '**/*.generated.ts'] },
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,

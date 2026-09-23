@@ -11,11 +11,18 @@ summary: |
     styles imported as a CSS module: `import styles from './<Name>.module.scss'`.
   - Import across folders with the '@/...' alias, never with '../'.
   - Type aliases are prefixed with T (TRelease, TCategory).
+  - Never edit *.generated.ts files; they are produced by tools.
 
 # Each run works in a fresh git checkout without node_modules (it's git-ignored),
 # so dependencies are installed once per run, inside the sandbox (Linux binaries).
 setup:
   - "if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi"
+
+# `make`/dashboard preview: runs the dev server on the run's workspace so you can
+# try the result before approving. {port} is assigned by codecrew.
+preview:
+  command: node_modules/.bin/vite --host 0.0.0.0 --port {port} --strictPort
+  ready_pattern: "ready in"
 
 ignore: [node_modules/, .git/, dist/, build/, .svelte-kit/, .codecrew/]
 

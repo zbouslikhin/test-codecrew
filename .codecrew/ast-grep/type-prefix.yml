@@ -13,3 +13,5 @@ constraints:
       regex: "^T[A-Z]"
 files:
   - "src/**/*.ts"
+ignores:
+  - "**/*.generated.ts"
