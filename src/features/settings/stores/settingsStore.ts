@@ -45,10 +45,17 @@ const persistSettings = (settings: TSettings): void => {
 };
 
 const createSettingsStore = () => {
-	const { subscribe, set } = writable<TSettings>(loadSettings());
+	const { subscribe, set, update } = writable<TSettings>(loadSettings());
 
 	return {
 		subscribe,
+		setTheme: (theme: TTheme): void => {
+			update((current) => {
+				const next = { ...current, theme };
+				persistSettings(next);
+				return next;
+			});
+		},
 		save: (settings: TSettings): void => {
 			const next = { ...settings };
 			persistSettings(next);

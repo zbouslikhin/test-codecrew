@@ -3,10 +3,15 @@
 	import { get } from 'svelte/store';
 	import { THEME_OPTIONS } from '@/features/settings/constants';
 	import { settingsStore } from '@/features/settings/stores/settingsStore';
-	import type { TSettings } from '@/features/settings/types';
+	import type { TSettings, TTheme } from '@/features/settings/types';
 
 	let draft: TSettings = $state({ ...get(settingsStore) });
 	let saved = $state(false);
+
+	// Keep the theme choice in sync when it is changed elsewhere (e.g. the nav toggle).
+	$effect(() => {
+		draft.theme = $settingsStore.theme;
+	});
 
 	const handleSubmit = (event: SubmitEvent) => {
 		event.preventDefault();
@@ -23,6 +28,13 @@
 
 	const handleInput = () => {
 		saved = false;
+	};
+
+	// Apply (and persist) the theme immediately so the whole app switches right away,
+	// instead of waiting for the form to be saved.
+	const handleThemeChange = (theme: TTheme) => {
+		draft.theme = theme;
+		settingsStore.setTheme(theme);
 	};
 </script>
 
@@ -44,7 +56,13 @@
 			<legend class={styles.label}>Theme</legend>
 			{#each THEME_OPTIONS as option (option.value)}
 				<label class={styles.option}>
-					<input type="radio" name="theme" value={option.value} bind:group={draft.theme} />
+					<input
+						type="radio"
+						name="theme"
+						value={option.value}
+						checked={draft.theme === option.value}
+						onchange={() => handleThemeChange(option.value)}
+					/>
 					{option.label}
 				</label>
 			{/each}
