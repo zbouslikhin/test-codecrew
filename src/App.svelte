@@ -1,10 +1,9 @@
 <script lang="ts">
-	import Greeting from '@/features/welcome/components/Greeting/Greeting.svelte';
+	import HomePage from '@/features/home/components/HomePage/HomePage.svelte';
 	import SettingsPage from '@/features/settings/components/SettingsPage/SettingsPage.svelte';
 	import AboutPage from '@/features/about/components/AboutPage/AboutPage.svelte';
 	import ThemeToggle from '@/features/settings/components/ThemeToggle/ThemeToggle.svelte';
 	import ContactPage from '@/features/contact/components/ContactPage/ContactPage.svelte';
-	import { DEFAULT_GREETING } from '@/features/welcome';
 
 	type TPage = 'home' | 'settings' | 'about' | 'contact';
 
@@ -48,6 +47,6 @@
 	{:else if page === 'contact'}
 		<ContactPage />
 	{:else}
-		<Greeting greeting={DEFAULT_GREETING} />
+		<HomePage />
 	{/if}
 </main>

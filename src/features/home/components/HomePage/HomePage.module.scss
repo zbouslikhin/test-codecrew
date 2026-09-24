@@ -1,0 +1,40 @@
+.homePage {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* Fill the viewport below the nav bar. */
+	min-height: calc(100vh - 3.5rem);
+	overflow: hidden;
+	/* The scene is always a night sky, regardless of the app theme. */
+	background: radial-gradient(ellipse at center, #1e293b 0%, #0b1020 55%, #03050c 100%);
+	color: #f8fafc;
+}
+
+.hero {
+	position: relative;
+	z-index: 1;
+	max-width: 40rem;
+	padding: 2rem;
+	text-align: center;
+	pointer-events: none;
+	text-shadow: 0 2px 16px rgba(0, 0, 0, 0.7);
+}
+
+.title {
+	margin: 0;
+	font-size: clamp(2rem, 6vw, 4rem);
+	letter-spacing: -0.02em;
+}
+
+.subtitle {
+	margin: 1rem 0 0;
+	font-size: clamp(1rem, 2.2vw, 1.25rem);
+	color: #cbd5e1;
+}
+
+.notice {
+	margin: 1rem 0 0;
+	font-size: 0.875rem;
+	color: #fca5a5;
+}
