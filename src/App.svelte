@@ -36,8 +36,14 @@
 	<a href="#/" aria-current={page === 'home' ? 'page' : undefined}>Home</a>
 	<a href="#/settings" aria-current={page === 'settings' ? 'page' : undefined}>Settings</a>
 	<a href="#/about" aria-current={page === 'about' ? 'page' : undefined}>About</a>
+<<<<<<< HEAD
 	<ThemeToggle />
 	<a href="#/contact" aria-current={page === 'contact' ? 'page' : undefined}>Contact</a>
+=======
+  <a href="#/contact" aria-current={page === 'contact' ? 'page' : undefined}>Contact</a>
+	<ThemeToggle />
+	
+>>>>>>> e5cf6c82c68d71c8a608c72504d11d501aad00a1
 </nav>
 
 <main>
