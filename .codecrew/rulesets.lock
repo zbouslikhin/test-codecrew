@@ -1,0 +1,15 @@
+# Written by codecrew: what is installed, with a hash per file. Don't edit by hand.
+lock_version: 1
+rulesets:
+- source: https://github.com/zbouslikhin/codecrew-rulesets.git
+  name: svelte-feature
+  version: v1.0.0
+  commit: 003264efa837d7efc17c06573604d53d70b7607e
+  path: .
+  files:
+    .codecrew/rulesets/svelte-feature/ruleset.yaml: 2010bedc94fba59b554ffb5bc66b2ed897c17d859b1723420e402b808114120d
+    .codecrew/ast-grep/type-prefix.yml: 5fe2754288631b842744240e79b3499f2441c10cbe11dbb09aa679a9ce22b6df
+    .prettierignore: 79eb69267dda27170ca3768ca1cb7c01236060f92d8462dc48f274f6bc2d5a41
+    .prettierrc.json: 13e6db9e0370e84beebe6793661f5b9df87ebd4841373ac5be3b9131ff8dace9
+    eslint.config.js: dd8a45b7d729c845f0bab6d904a1fcad14eb92ea4955704d87bffd2f037b73ed
+    sgconfig.yml: b8627ca3a0c473d4e1014824e87d90cc11c9f7894f5559cf738324e3d7752bf9

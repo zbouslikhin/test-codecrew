@@ -3,9 +3,10 @@
 	import SettingsPage from '@/features/settings/components/SettingsPage/SettingsPage.svelte';
 	import AboutPage from '@/features/about/components/AboutPage/AboutPage.svelte';
 	import ThemeToggle from '@/features/settings/components/ThemeToggle/ThemeToggle.svelte';
+	import ContactPage from '@/features/contact/components/ContactPage/ContactPage.svelte';
 	import { DEFAULT_GREETING } from '@/features/welcome';
 
-	type TPage = 'home' | 'settings' | 'about';
+	type TPage = 'home' | 'settings' | 'about' | 'contact';
 
 	const readPage = (): TPage => {
 		switch (window.location.hash) {
@@ -13,6 +14,8 @@
 				return 'settings';
 			case '#/about':
 				return 'about';
+			case '#/contact':
+				return 'contact';
 			default:
 				return 'home';
 		}
@@ -34,6 +37,7 @@
 	<a href="#/settings" aria-current={page === 'settings' ? 'page' : undefined}>Settings</a>
 	<a href="#/about" aria-current={page === 'about' ? 'page' : undefined}>About</a>
 	<ThemeToggle />
+	<a href="#/contact" aria-current={page === 'contact' ? 'page' : undefined}>Contact</a>
 </nav>
 
 <main>
@@ -41,6 +45,8 @@
 		<SettingsPage />
 	{:else if page === 'about'}
 		<AboutPage />
+	{:else if page === 'contact'}
+		<ContactPage />
 	{:else}
 		<Greeting greeting={DEFAULT_GREETING} />
 	{/if}
