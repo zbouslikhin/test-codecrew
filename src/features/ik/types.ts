@@ -28,7 +28,18 @@ export type TIkSceneState = {
 	/** Task-space direction lost at a singularity (only the linear part is drawn). */
 	lostDirection?: number[];
 	reached: boolean;
+	/** Visibility per DH frame: index 0 is the base frame {0}, index n the end-effector frame. */
+	frameVisibility: boolean[];
+	/** Planned straight-line path (end-effector waypoints), empty when there is none. */
+	plannedPath: TVec3[];
+	/** End-effector positions the robot actually reaches along the path. */
+	tracedPath: TVec3[];
+	/** Playback position along the path, 0…1. */
+	pathProgress: number;
 };
+
+/** Where the path playback currently is. */
+export type TPathPlayback = 'idle' | 'playing' | 'paused' | 'done';
 
 export type TSceneColors = {
 	joint: number;
@@ -42,5 +53,8 @@ export type TSceneColors = {
 	axisY: number;
 	axisZ: number;
 	lostDirection: number;
+	pathPlanned: number;
+	pathTraced: number;
+	pathStart: number;
 	status: Record<TSingularityStatus, number>;
 };

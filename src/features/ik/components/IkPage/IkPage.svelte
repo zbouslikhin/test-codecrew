@@ -1,18 +1,33 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import styles from './IkPage.module.scss';
 	import DhTable from '@/features/ik/components/DhTable/DhTable.svelte';
 	import IkScene from '@/features/ik/components/IkScene/IkScene.svelte';
 	import SingularityPanel from '@/features/ik/components/SingularityPanel/SingularityPanel.svelte';
+	import FramePanel from '@/features/ik/components/FramePanel/FramePanel.svelte';
+	import PathPanel from '@/features/ik/components/PathPanel/PathPanel.svelte';
 	import {
 		DEFAULT_DH_JOINT,
+		DEFAULT_PATH_DURATION,
 		DEFAULT_PRESET_ID,
 		DH_PRESETS,
 		IK_PAGE_COPY,
 		MAX_DOF,
-		MIN_DOF
+		MAX_PATH_DURATION,
+		MIN_DOF,
+		MIN_PATH_DURATION
 	} from '@/features/ik/constants';
-	import type { TDhPreset, TIkPageCopy } from '@/features/ik/types';
-	import type { TDhJoint, TIkResult, TTaskMode, TVec3 } from '@/types/kinematics';
+	import type { TDhPreset, TIkPageCopy, TPathPlayback } from '@/features/ik/types';
+	import type {
+		TDhJoint,
+		TIkOptions,
+		TIkPath,
+		TIkResult,
+		TMatrix3,
+		TTaskMode,
+		TVec3
+	} from '@/types/kinematics';
+	import { configurationAt, planCartesianPath } from '@/utils/pathPlanning';
 	import { formatNumber } from '@/utils/formatNumber';
 	import {
 		DEFAULT_IK_OPTIONS,
@@ -59,7 +74,7 @@
 	let presetId = $state(initialPreset.id);
 	let joints: TDhJoint[] = $state(initialPreset.joints.map((joint) => ({ ...joint })));
 	let q: number[] = $state(initialQ);
-	let mode: TTaskMode = $state('position');
+	let mode = $state<TTaskMode>('position' as TTaskMode);
 	let target: TVec3 = $state(initialPose.position);
 	/** Target orientation as roll/pitch/yaw in degrees (pose mode only). */
 	let targetRpy: TVec3 = $state(toDegrees(initialPose.rpy));
@@ -83,20 +98,130 @@
 	const reached = $derived(positionError <= Math.max(reach * 1e-3, 1e-3));
 	const targetRange = $derived(Math.ceil(reach * 1.2 * 10) / 10);
 
-	const solve = () => {
+	/* ------------------------------------ Reference frames ----------------------------------- */
+
+	/** User choices per frame; frames without a choice yet are shown. */
+	let frameChoices: boolean[] = $state([]);
+	/** One entry per DH frame {0} (base) … {n} (end effector). */
+	const frameVisibility = $derived(
+		Array.from({ length: dof + 1 }, (_, index) => frameChoices[index] ?? true)
+	);
+
+	const toggleFrame = (index: number) => {
+		frameChoices = frameVisibility.map((visible, i) => (i === index ? !visible : visible));
+	};
+
+	const setAllFrames = (visible: boolean) => {
+		frameChoices = frameVisibility.map(() => visible);
+	};
+
+	/* -------------------------------------- Path planning ------------------------------------ */
+
+	let path: TIkPath | undefined = $state.raw();
+	let playback: TPathPlayback = $state('idle');
+	let pathProgress = $state(0);
+	let pathDuration = $state(DEFAULT_PATH_DURATION);
+
+	const canPlan = $derived(!reached || mode === 'pose');
+
+	const clearPath = () => {
+		path = undefined;
+		playback = 'idle';
+		pathProgress = 0;
+	};
+
+	const targetRotation = (): TMatrix3 | undefined => {
 		const [roll, pitch, yaw] = targetRpy.map(degToRad);
+		return mode === 'pose' ? rpyToRotation(roll, pitch, yaw) : undefined;
+	};
+
+	const ikOptions = (): TIkOptions => ({
+		...DEFAULT_IK_OPTIONS,
+		mode,
+		positionTolerance: Math.max(reach * 1e-5, 1e-6)
+	});
+
+	const planPath = () => {
+		// Always start from where the end effector is right now.
+		const planned = planCartesianPath(
+			$state.snapshot(joints),
+			$state.snapshot(q),
+			[...target],
+			targetRotation(),
+			ikOptions(),
+			genericRank
+		);
+		path = planned;
+		lastResult = undefined;
+		pathProgress = 0;
+		q = [...planned.configurations[0]];
+		playback = 'playing';
+	};
+
+	const togglePlay = () => {
+		if (!path) {
+			return;
+		}
+		if (playback === 'playing') {
+			playback = 'paused';
+			return;
+		}
+		if (pathProgress >= 1) {
+			pathProgress = 0;
+		}
+		playback = 'playing';
+	};
+
+	const replay = () => {
+		pathProgress = 0;
+		playback = 'playing';
+	};
+
+	const seekPath = (progress: number) => {
+		if (!path) {
+			return;
+		}
+		pathProgress = Math.min(Math.max(progress, 0), 1);
+		q = configurationAt(path, pathProgress);
+		playback = pathProgress >= 1 ? 'done' : 'paused';
+		lastResult = pathProgress >= 1 ? path.result : undefined;
+	};
+
+	const setPathDuration = (seconds: number) => {
+		pathDuration = Math.min(MAX_PATH_DURATION, Math.max(MIN_PATH_DURATION, seconds));
+	};
+
+	// Playback: advance along the planned configurations, one step per animation frame.
+	$effect(() => {
+		const plan = path;
+		if (!plan || playback !== 'playing') {
+			return;
+		}
+		const durationMs = pathDuration * 1000;
+		const startTime = performance.now() - untrack(() => pathProgress) * durationMs;
+		let frameId = 0;
+		const tick = (now: number) => {
+			const progress = Math.min(Math.max((now - startTime) / durationMs, 0), 1);
+			pathProgress = progress;
+			q = configurationAt(plan, progress);
+			if (progress >= 1) {
+				playback = 'done';
+				lastResult = plan.result;
+				return;
+			}
+			frameId = requestAnimationFrame(tick);
+		};
+		frameId = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frameId);
+	});
+
+	const solve = () => {
+		clearPath();
 		const result = solveIk(
 			$state.snapshot(joints),
-			{
-				position: [...target],
-				rotation: mode === 'pose' ? rpyToRotation(roll, pitch, yaw) : undefined
-			},
+			{ position: [...target], rotation: targetRotation() },
 			$state.snapshot(q),
-			{
-				...DEFAULT_IK_OPTIONS,
-				mode,
-				positionTolerance: Math.max(reach * 1e-5, 1e-6)
-			},
+			ikOptions(),
 			genericRank
 		);
 		lastResult = result;
@@ -111,6 +236,7 @@
 
 	/** Moves the target onto the current end effector, so the arm starts at rest. */
 	const syncTargetToEffector = () => {
+		clearPath();
 		target = [...current.position];
 		targetRpy = toDegrees(current.rpy);
 		lastResult = undefined;
@@ -139,6 +265,7 @@
 			nextJoints.push({ ...DEFAULT_DH_JOINT });
 			nextQ.push(0);
 		}
+		clearPath();
 		joints = nextJoints;
 		q = nextQ;
 		presetId = '';
@@ -146,6 +273,7 @@
 	};
 
 	const updateJoint = (index: number, joint: TDhJoint) => {
+		clearPath();
 		joints = joints.map((existing, i) => (i === index ? joint : existing));
 		presetId = '';
 		lastResult = undefined;
@@ -156,6 +284,7 @@
 		if (!Number.isFinite(parsed)) {
 			return;
 		}
+		clearPath();
 		const value = joints[index].type === 'revolute' ? degToRad(parsed) : parsed;
 		q = q.map((existing, i) => (i === index ? value : existing));
 		lastResult = undefined;
@@ -166,6 +295,7 @@
 		if (!Number.isFinite(parsed)) {
 			return;
 		}
+		clearPath();
 		target = target.map((value, i) => (i === axis ? parsed : value)) as TVec3;
 		maybeSolve();
 	};
@@ -175,11 +305,13 @@
 		if (!Number.isFinite(parsed)) {
 			return;
 		}
+		clearPath();
 		targetRpy = targetRpy.map((value, i) => (i === axis ? parsed : value)) as TVec3;
 		maybeSolve();
 	};
 
 	const setMode = (next: TTaskMode) => {
+		clearPath();
 		mode = next;
 		lastResult = undefined;
 	};
@@ -370,8 +502,27 @@
 					status={analysis.status}
 					lostDirection={analysis.lostDirection}
 					{reached}
+					{frameVisibility}
+					plannedPath={path?.waypoints ?? []}
+					tracedPath={path?.traced ?? []}
+					{pathProgress}
 				/>
 			</div>
+			<PathPanel
+				{path}
+				{playback}
+				progress={pathProgress}
+				duration={pathDuration}
+				distance={positionError}
+				{canPlan}
+				onPlan={planPath}
+				onTogglePlay={togglePlay}
+				onReplay={replay}
+				onClear={clearPath}
+				onSeek={seekPath}
+				onDurationChange={setPathDuration}
+			/>
+			<FramePanel visibility={frameVisibility} onToggle={toggleFrame} onSetAll={setAllFrames} />
 			<SingularityPanel {analysis} {jacobian} {inverse} />
 		</div>
 	</div>

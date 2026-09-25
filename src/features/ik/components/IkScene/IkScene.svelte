@@ -5,6 +5,8 @@
 	import type { TIkSceneState } from '@/features/ik/types';
 	import type { TDhJoint, TSingularityStatus, TVec3 } from '@/types/kinematics';
 	import type {
+		TLine,
+		TMaterial,
 		TMesh,
 		TObject3D,
 		TThreeContext,
@@ -19,7 +21,11 @@
 		target,
 		status,
 		lostDirection,
-		reached
+		reached,
+		frameVisibility = [],
+		plannedPath = [],
+		tracedPath = [],
+		pathProgress = 0
 	}: {
 		joints: TDhJoint[];
 		q: number[];
@@ -27,6 +33,12 @@
 		status: TSingularityStatus;
 		lostDirection?: number[];
 		reached: boolean;
+		/** Visibility per DH frame {0} … {n}; missing entries are hidden. */
+		frameVisibility?: boolean[];
+		plannedPath?: TVec3[];
+		tracedPath?: TVec3[];
+		/** 0…1: how much of the traced path to draw. */
+		pathProgress?: number;
 	} = $props();
 
 	let sceneStatus: TThreeStatus = $state('loading');
@@ -37,7 +49,11 @@
 		q: [],
 		target: [0, 0, 0],
 		status: 'regular',
-		reached: true
+		reached: true,
+		frameVisibility: [],
+		plannedPath: [],
+		tracedPath: [],
+		pathProgress: 0
 	};
 
 	$effect(() => {
@@ -47,6 +63,10 @@
 		sceneState.status = status;
 		sceneState.lostDirection = lostDirection;
 		sceneState.reached = reached;
+		sceneState.frameVisibility = frameVisibility;
+		sceneState.plannedPath = plannedPath;
+		sceneState.tracedPath = tracedPath;
+		sceneState.pathProgress = pathProgress;
 	});
 
 	/** DH frames are z-up; three.js is y-up. */
@@ -88,6 +108,22 @@
 			opacity: 0.55
 		});
 		const lostMaterial = new THREE.MeshBasicMaterial({ color: SCENE_COLORS.lostDirection });
+		const axisMaterials = [
+			new THREE.MeshBasicMaterial({ color: SCENE_COLORS.axisX }),
+			new THREE.MeshBasicMaterial({ color: SCENE_COLORS.axisY }),
+			new THREE.MeshBasicMaterial({ color: SCENE_COLORS.axisZ })
+		];
+		const plannedMaterial = new THREE.LineBasicMaterial({
+			color: SCENE_COLORS.pathPlanned,
+			transparent: true,
+			opacity: 0.7
+		});
+		const tracedMaterial = new THREE.LineBasicMaterial({ color: SCENE_COLORS.pathTraced });
+		const startMaterial = new THREE.MeshBasicMaterial({
+			color: SCENE_COLORS.pathStart,
+			transparent: true,
+			opacity: 0.8
+		});
 
 		let grid = new THREE.GridHelper(4, 8, SCENE_COLORS.gridMajor, SCENE_COLORS.gridMinor);
 		const axes = new THREE.AxesHelper(0.5);
@@ -126,6 +162,51 @@
 		const targetMarker = new THREE.Mesh(sphere, targetMaterial);
 		const lostArrow = createRod(lostMaterial);
 		scene.add(effector, targetMarker);
+
+		/** One x/y/z triad per DH frame, {0} (base) … {n} (end effector). */
+		const frameTriads: TObject3D[][] = [];
+		const ensureFrames = (count: number) => {
+			while (frameTriads.length < count) {
+				frameTriads.push(axisMaterials.map((material) => createRod(material)));
+			}
+			frameTriads.forEach((triad, index) => {
+				if (index >= count) {
+					triad.forEach((rod) => (rod.visible = false));
+				}
+			});
+		};
+
+		/** A polyline whose geometry is rebuilt only when the path array changes. */
+		const createPath = (material: TMaterial) => {
+			let points: TVec3[] = [];
+			const line: TLine = new THREE.Line(new THREE.BufferGeometry(), material);
+			line.frustumCulled = false;
+			line.visible = false;
+			scene.add(line);
+			const sync = (next: TVec3[], visibleCount: number) => {
+				if (next !== points && (next.length > 0 || points.length > 0)) {
+					points = next;
+					line.geometry.dispose();
+					const geometry = new THREE.BufferGeometry();
+					const positions = new Float32Array(Math.max(next.length, 1) * 3);
+					next.forEach((point, index) => {
+						const converted = toThree(point);
+						positions.set(converted, index * 3);
+					});
+					geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+					line.geometry = geometry;
+				}
+				const count = Math.min(visibleCount, points.length);
+				line.visible = count >= 2;
+				line.geometry.setDrawRange(0, count);
+			};
+			return { sync, dispose: () => line.geometry.dispose() };
+		};
+		const plannedLine = createPath(plannedMaterial);
+		const tracedLine = createPath(tracedMaterial);
+		const startMarker = new THREE.Mesh(sphere, startMaterial);
+		startMarker.visible = false;
+		scene.add(startMarker);
 
 		const ensureCount = (count: number) => {
 			while (linkRods.length < count) {
@@ -230,6 +311,40 @@
 				}
 			});
 
+			ensureFrames(frames.length);
+			const axisLength = Math.max(reach * 0.12, 0.08);
+			frames.forEach((frame, index) => {
+				const show = sceneState.frameVisibility[index] ?? false;
+				const origin = framePosition(frame);
+				frameTriads[index].forEach((rod, axis) => {
+					if (!show) {
+						rod.visible = false;
+						return;
+					}
+					const direction = frameAxis(frame, axis as 0 | 1 | 2);
+					placeRod(
+						rod,
+						origin,
+						[
+							origin[0] + direction[0] * axisLength,
+							origin[1] + direction[1] * axisLength,
+							origin[2] + direction[2] * axisLength
+						],
+						radius * 0.35
+					);
+				});
+			});
+
+			const { plannedPath: planned, tracedPath: traced, pathProgress: progress } = sceneState;
+			plannedLine.sync(planned, planned.length);
+			tracedLine.sync(traced, 1 + Math.ceil(progress * (traced.length - 1)));
+			startMarker.visible = planned.length > 0;
+			if (startMarker.visible) {
+				const start = toThree(planned[0]);
+				startMarker.position.set(start[0], start[1], start[2]);
+				startMarker.scale.setScalar(radius * 2);
+			}
+
 			const end = toThree(framePosition(frames[frames.length - 1]));
 			effector.position.set(end[0], end[1], end[2]);
 			effector.scale.setScalar(radius * 2.4);
@@ -275,7 +390,13 @@
 			host.removeEventListener('pointerup', handlePointerUp);
 			host.removeEventListener('pointercancel', handlePointerUp);
 			host.removeEventListener('wheel', handleWheel);
+			plannedLine.dispose();
+			tracedLine.dispose();
 			[
+				...axisMaterials,
+				plannedMaterial,
+				tracedMaterial,
+				startMaterial,
 				cylinder,
 				sphere,
 				box,

@@ -53,6 +53,7 @@ export type TBufferAttribute = {
 export type TBufferGeometry = TDisposable & {
 	setAttribute(name: string, attribute: TBufferAttribute): TBufferGeometry;
 	getAttribute(name: string): TBufferAttribute;
+	setDrawRange(start: number, count: number): void;
 };
 
 export type TMaterial = TDisposable & {
@@ -82,6 +83,12 @@ export type TMesh = TObject3D & {
 };
 
 export type TPoints = TObject3D & {
+	geometry: TBufferGeometry;
+	material: TMaterial;
+};
+
+/** Polyline through the geometry's vertices; geometry can be swapped when the path changes. */
+export type TLine = TObject3D & {
 	geometry: TBufferGeometry;
 	material: TMaterial;
 };
@@ -133,6 +140,10 @@ export type TMeshBasicMaterialParameters = TBaseMaterialParameters & {
 	color?: number;
 };
 
+export type TLineBasicMaterialParameters = TBaseMaterialParameters & {
+	color?: number;
+};
+
 export type TPointsMaterialParameters = TBaseMaterialParameters & {
 	color?: number;
 	size?: number;
@@ -171,7 +182,9 @@ export type TThreeModule = {
 	MeshStandardMaterial: new (parameters: TMeshStandardMaterialParameters) => TStandardMaterial;
 	MeshBasicMaterial: new (parameters: TMeshBasicMaterialParameters) => TBasicMaterial;
 	PointsMaterial: new (parameters: TPointsMaterialParameters) => TMaterial;
+	LineBasicMaterial: new (parameters: TLineBasicMaterialParameters) => TBasicMaterial;
 	Mesh: new (geometry: TBufferGeometry, material: TMaterial) => TMesh;
+	Line: new (geometry: TBufferGeometry, material: TMaterial) => TLine;
 	Points: new (geometry: TBufferGeometry, material: TMaterial) => TPoints;
 	GridHelper: new (size?: number, divisions?: number, color1?: number, color2?: number) => THelper;
 	AxesHelper: new (size?: number) => THelper;

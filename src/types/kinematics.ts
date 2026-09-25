@@ -82,6 +82,29 @@ export type TIkOptions = {
 	restarts: number;
 };
 
+/**
+ * Straight-line Cartesian path from the end effector to the target, solved waypoint by
+ * waypoint (each IK solve is seeded with the previous configuration, so the motion is continuous).
+ */
+export type TIkPath = {
+	/** Planned end-effector positions along the straight line, start included. */
+	waypoints: TVec3[];
+	/** Joint configuration at each waypoint, start included. */
+	configurations: number[][];
+	/** End-effector positions the robot actually reaches at each waypoint. */
+	traced: TVec3[];
+	/** Jacobian status at each waypoint. */
+	statuses: TSingularityStatus[];
+	/** Whether the IK converged at each waypoint. */
+	converged: boolean[];
+	/** Largest distance between a planned and a reached waypoint. */
+	maxDeviation: number;
+	singularCount: number;
+	nearCount: number;
+	/** IK result at the final waypoint (the target). */
+	result: TIkResult;
+};
+
 export type TIkResult = {
 	q: number[];
 	converged: boolean;

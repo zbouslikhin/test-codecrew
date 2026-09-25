@@ -92,6 +92,11 @@ export const DH_PRESETS: TDhPreset[] = [
 
 export const DEFAULT_PRESET_ID = 'elbow';
 
+/** Path playback duration range, in seconds. */
+export const MIN_PATH_DURATION = 0.5;
+export const MAX_PATH_DURATION = 10;
+export const DEFAULT_PATH_DURATION = 3;
+
 export const STATUS_COPY: TStatusCopy = {
 	regular: {
 		label: 'Regular',
@@ -121,6 +126,9 @@ export const SCENE_COLORS: TSceneColors = {
 	axisY: 0x22c55e,
 	axisZ: 0x3b82f6,
 	lostDirection: 0xf43f5e,
+	pathPlanned: 0xa3a3a3,
+	pathTraced: 0xf59e0b,
+	pathStart: 0xe879f9,
 	status: {
 		regular: 0x38bdf8,
 		near: 0xfacc15,
