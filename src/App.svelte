@@ -4,11 +4,14 @@
 	import AboutPage from '@/features/about/components/AboutPage/AboutPage.svelte';
 	import ThemeToggle from '@/features/settings/components/ThemeToggle/ThemeToggle.svelte';
 	import ContactPage from '@/features/contact/components/ContactPage/ContactPage.svelte';
+	import IkPage from '@/features/ik/components/IkPage/IkPage.svelte';
 
-	type TPage = 'home' | 'settings' | 'about' | 'contact';
+	type TPage = 'home' | 'settings' | 'about' | 'contact' | 'ik';
 
 	const readPage = (): TPage => {
 		switch (window.location.hash) {
+			case '#/ik':
+				return 'ik';
 			case '#/settings':
 				return 'settings';
 			case '#/about':
@@ -33,6 +36,7 @@
 
 <nav>
 	<a href="#/" aria-current={page === 'home' ? 'page' : undefined}>Home</a>
+	<a href="#/ik" aria-current={page === 'ik' ? 'page' : undefined}>IK</a>
 	<a href="#/settings" aria-current={page === 'settings' ? 'page' : undefined}>Settings</a>
 	<a href="#/about" aria-current={page === 'about' ? 'page' : undefined}>About</a>
 	<a href="#/contact" aria-current={page === 'contact' ? 'page' : undefined}>Contact</a>
@@ -46,6 +50,8 @@
 		<AboutPage />
 	{:else if page === 'contact'}
 		<ContactPage />
+	{:else if page === 'ik'}
+		<IkPage />
 	{:else}
 		<HomePage />
 	{/if}

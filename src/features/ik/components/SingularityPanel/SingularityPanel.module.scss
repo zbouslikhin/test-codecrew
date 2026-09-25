@@ -1,0 +1,88 @@
+.singularityPanel {
+	--status-color: #38bdf8;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1rem;
+	border: 1px solid var(--color-border);
+	border-left: 4px solid var(--status-color);
+	border-radius: 8px;
+
+	&[data-status='near'] {
+		--status-color: #eab308;
+	}
+
+	&[data-status='singular'] {
+		--status-color: #ef4444;
+	}
+}
+
+.heading {
+	margin: 0;
+	font-size: 1.125rem;
+}
+
+.badge {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	margin: 0;
+	font-size: 0.875rem;
+
+	strong {
+		color: var(--status-color);
+		font-size: 1rem;
+	}
+}
+
+.metrics {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+	gap: 0.5rem 1rem;
+	margin: 0;
+
+	dt {
+		font-size: 0.75rem;
+		opacity: 0.75;
+	}
+
+	dd {
+		margin: 0;
+		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+		font-size: 0.875rem;
+	}
+}
+
+.note {
+	margin: 0;
+	font-size: 0.8125rem;
+	opacity: 0.85;
+}
+
+.details summary {
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 0.875rem;
+}
+
+.mono {
+	margin: 0.5rem 0 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 0.8125rem;
+	white-space: pre-wrap;
+}
+
+.matrix {
+	display: block;
+	overflow-x: auto;
+	margin-top: 0.5rem;
+	border-collapse: collapse;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 0.75rem;
+
+	td {
+		padding: 0.125rem 0.5rem;
+		text-align: right;
+		white-space: nowrap;
+	}
+}

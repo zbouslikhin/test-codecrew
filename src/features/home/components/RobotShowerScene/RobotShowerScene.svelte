@@ -1,9 +1,7 @@
 <script lang="ts">
 	import styles from './RobotShowerScene.module.scss';
-	import { loadThree } from '@/utils/loadThree';
+	import ThreeCanvas from '@/components/ThreeCanvas/ThreeCanvas.svelte';
 	import {
-		MAX_FRAME_DELTA_SECONDS,
-		MAX_PIXEL_RATIO,
 		REDUCED_MOTION_MEDIA_QUERY,
 		REDUCED_MOTION_SHOWER_CONFIG,
 		ROBOT_PALETTES,
@@ -16,7 +14,10 @@
 		TDisposable,
 		TMaterial,
 		TObject3D,
+		TThreeContext,
 		TThreeModule,
+		TThreeSceneController,
+		TThreeSceneSetup,
 		TVector3
 	} from '@/types/three';
 
@@ -38,14 +39,11 @@
 		onStatusChange?: (status: TSceneStatus) => void;
 	} = $props();
 
-	let container: HTMLDivElement | undefined = $state();
-	let canvas: HTMLCanvasElement | undefined = $state();
-
 	const randomBetween = (min: number, max: number): number => min + Math.random() * (max - min);
 
-	const resolveConfig = (): TShowerConfig => {
-		if (config) {
-			return config;
+	const resolveConfig = (override: TShowerConfig | undefined): TShowerConfig => {
+		if (override) {
+			return override;
 		}
 		const prefersReducedMotion =
 			typeof window.matchMedia === 'function' &&
@@ -71,22 +69,9 @@
 	};
 
 	const startScene = (
-		THREE: TThreeModule,
-		host: HTMLDivElement,
-		target: HTMLCanvasElement,
+		{ THREE, scene, camera, host }: TThreeContext,
 		settings: TShowerConfig
-	): (() => void) => {
-		const renderer = new THREE.WebGLRenderer({
-			canvas: target,
-			antialias: true,
-			alpha: true,
-			powerPreference: 'high-performance'
-		});
-		renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
-		renderer.setClearColor(0x000000, 0);
-
-		const scene = new THREE.Scene();
-		const camera = new THREE.PerspectiveCamera(settings.cameraFov, 1, 0.1, 400);
+	): TThreeSceneController => {
 		camera.position.set(0, 0, settings.cameraDistance);
 		camera.lookAt(0, 0, 0);
 
@@ -252,17 +237,6 @@
 			robot.trail.geometry.dispose();
 		};
 
-		const resize = () => {
-			const width = Math.max(host.clientWidth, 1);
-			const height = Math.max(host.clientHeight, 1);
-			renderer.setSize(width, height, false);
-			camera.aspect = width / height;
-			camera.updateProjectionMatrix();
-		};
-		resize();
-		const resizeObserver = new ResizeObserver(resize);
-		resizeObserver.observe(host);
-
 		// Gentle parallax: the camera drifts toward the pointer.
 		let pointerX = 0;
 		let pointerY = 0;
@@ -281,14 +255,8 @@
 		}
 
 		let spawnAccumulator = 0;
-		let lastTime = performance.now();
-		let frameId = 0;
 
-		const tick = (now: number) => {
-			frameId = requestAnimationFrame(tick);
-			const delta = Math.min((now - lastTime) / 1000, MAX_FRAME_DELTA_SECONDS);
-			lastTime = now;
-
+		const update = (delta: number) => {
 			spawnAccumulator = Math.min(spawnAccumulator + delta * settings.spawnPerSecond, 3);
 			while (spawnAccumulator >= 1) {
 				spawnAccumulator -= 1;
@@ -326,14 +294,9 @@
 			camera.position.x += (pointerX * 4 - camera.position.x) * Math.min(delta * 2, 1);
 			camera.position.y += (-pointerY * 3 - camera.position.y) * Math.min(delta * 2, 1);
 			camera.lookAt(0, 0, 0);
-
-			renderer.render(scene, camera);
 		};
-		frameId = requestAnimationFrame(tick);
 
-		return () => {
-			cancelAnimationFrame(frameId);
-			resizeObserver.disconnect();
+		const dispose = () => {
 			window.removeEventListener('pointermove', handlePointerMove);
 			while (robots.length > 0) {
 				removeRobot(robots.length - 1);
@@ -341,46 +304,21 @@
 			const sharedResources: TDisposable[] = [
 				...Object.values(geometries),
 				starGeometry,
-				starMaterial,
-				renderer
+				starMaterial
 			];
 			sharedResources.forEach((resource) => resource.dispose());
 		};
+
+		return { update, dispose };
 	};
 
-	$effect(() => {
-		const host = container;
-		const target = canvas;
-		if (!host || !target) {
-			return;
-		}
-		const settings = resolveConfig();
-		let disposed = false;
-		let stopScene: (() => void) | undefined;
-
-		onStatusChange?.('loading');
-		loadThree()
-			.then((THREE) => {
-				if (disposed) {
-					return;
-				}
-				stopScene = startScene(THREE, host, target, settings);
-				onStatusChange?.('ready');
-			})
-			.catch((error: unknown) => {
-				console.error('Failed to start the robot shower scene', error);
-				if (!disposed) {
-					onStatusChange?.('error');
-				}
-			});
-
-		return () => {
-			disposed = true;
-			stopScene?.();
-		};
+	const settings: TShowerConfig = $derived(resolveConfig(config));
+	const setup: TThreeSceneSetup = $derived.by(() => {
+		const current = settings;
+		return (context: TThreeContext) => startScene(context, current);
 	});
 </script>
 
-<div class={styles.robotShowerScene} bind:this={container} aria-hidden="true">
-	<canvas class={styles.canvas} bind:this={canvas}></canvas>
+<div class={styles.robotShowerScene}>
+	<ThreeCanvas {setup} cameraFov={settings.cameraFov} {onStatusChange} />
 </div>

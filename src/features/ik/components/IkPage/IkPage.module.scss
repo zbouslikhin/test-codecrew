@@ -1,0 +1,162 @@
+.ikPage {
+	padding: 1.5rem 2rem 2rem;
+}
+
+.header {
+	max-width: 56rem;
+	margin-bottom: 1.5rem;
+}
+
+.title {
+	margin: 0;
+}
+
+.subtitle {
+	margin: 0.5rem 0 0;
+	opacity: 0.8;
+}
+
+.layout {
+	display: grid;
+	grid-template-columns: minmax(22rem, 1fr) minmax(22rem, 1.2fr);
+	gap: 1.5rem;
+	align-items: start;
+
+	@media (max-width: 64rem) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.controls,
+.visual {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	min-width: 0;
+}
+
+.visual {
+	position: sticky;
+	top: 1rem;
+
+	@media (max-width: 64rem) {
+		position: static;
+	}
+}
+
+.viewport {
+	height: min(60vh, 34rem);
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1rem;
+	border: 1px solid var(--color-border);
+	border-radius: 8px;
+}
+
+.cardTitle {
+	margin: 0;
+	font-size: 1.125rem;
+}
+
+.row {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 0.75rem;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.fieldset {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+.label {
+	font-weight: 600;
+	padding: 0;
+}
+
+.input {
+	padding: 0.375rem 0.5rem;
+	border: 1px solid var(--color-border);
+	border-radius: 4px;
+	background: var(--color-bg);
+	color: inherit;
+	font: inherit;
+}
+
+.option {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.slider {
+	display: grid;
+	grid-template-columns: 5.5rem 1fr 6rem;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.primary,
+.secondary {
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	font: inherit;
+	cursor: pointer;
+}
+
+.primary {
+	border: 1px solid var(--color-primary-bg);
+	background: var(--color-primary-bg);
+	color: var(--color-primary-text);
+}
+
+.secondary {
+	border: 1px solid var(--color-border);
+	background: transparent;
+	color: inherit;
+}
+
+.success,
+.warning,
+.hint {
+	margin: 0;
+	font-size: 0.875rem;
+}
+
+.success {
+	color: var(--color-success);
+}
+
+.warning {
+	color: #f97316;
+}
+
+.hint {
+	opacity: 0.8;
+}
+
+.mono {
+	margin: 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 0.8125rem;
+}
