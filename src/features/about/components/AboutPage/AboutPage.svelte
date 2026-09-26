@@ -10,6 +10,19 @@
 	<h1 class={styles.title}>{content.title}</h1>
 	<p class={styles.intro}>{content.intro}</p>
 
+	<div class={styles.section}>
+		<h2 class={styles.heading}>{content.capabilitiesHeading}</h2>
+		<ul class={styles.capabilities}>
+			{#each content.capabilities as capability (capability.id)}
+				<li class={styles.capability}>
+					<h3 class={styles.capabilityName}>{capability.name}</h3>
+					<p class={styles.body}>{capability.description}</p>
+					<a class={styles.capabilityLink} href={capability.href}>{capability.linkLabel}</a>
+				</li>
+			{/each}
+		</ul>
+	</div>
+
 	{#each content.sections as section (section.id)}
 		<div class={styles.section}>
 			<h2 class={styles.heading}>{section.heading}</h2>
