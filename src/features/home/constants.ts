@@ -42,6 +42,3 @@ export const ROBOT_PALETTES: TRobotPalette[] = [
 ];
 
 export const SCENE_BACKGROUND_STAR_COLOR = 0xffffff;
-export const MAX_PIXEL_RATIO = 2;
-/** Clamp for frame delta so a backgrounded tab doesn't teleport robots on return. */
-export const MAX_FRAME_DELTA_SECONDS = 0.1;
