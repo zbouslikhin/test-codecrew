@@ -3,13 +3,16 @@ lock_version: 1
 rulesets:
 - source: https://github.com/zbouslikhin/codecrew-rulesets.git
   name: svelte-feature
-  version: v1.0.0
-  commit: 003264efa837d7efc17c06573604d53d70b7607e
+  version: v2.5.0
+  commit: 77736f8ab0ab24d2031a82d43d9add2a435e27ca
   path: .
   files:
-    .codecrew/rulesets/svelte-feature/ruleset.yaml: 2010bedc94fba59b554ffb5bc66b2ed897c17d859b1723420e402b808114120d
-    .codecrew/ast-grep/type-prefix.yml: 5fe2754288631b842744240e79b3499f2441c10cbe11dbb09aa679a9ce22b6df
+    .codecrew/rulesets/svelte-feature/ruleset.yaml: b734f3221fce29cb42b2eafcb3a8c6084b4f35557090aed1a6fc9c17244d2847
+    .codecrew/.gitattributes: be81c5332526ad052599b1c74e72a606cf7b52b0768d379c40fed28cfc7005e7
+    .codecrew/rulesets/svelte-feature/ast-grep/type-prefix.yml: 5fe2754288631b842744240e79b3499f2441c10cbe11dbb09aa679a9ce22b6df
     .prettierignore: 79eb69267dda27170ca3768ca1cb7c01236060f92d8462dc48f274f6bc2d5a41
     .prettierrc.json: 13e6db9e0370e84beebe6793661f5b9df87ebd4841373ac5be3b9131ff8dace9
-    eslint.config.js: dd8a45b7d729c845f0bab6d904a1fcad14eb92ea4955704d87bffd2f037b73ed
-    sgconfig.yml: b8627ca3a0c473d4e1014824e87d90cc11c9f7894f5559cf738324e3d7752bf9
+    eslint.config.js: fce79e0e3ab6c18759f6094990f545e0b862dbbdd9b9c4e46ad4d6847627e882
+    sgconfig.yml: 1e2215ab3fdb4e66a681953f60c0d920d5de2582a675edfaa831631cf59241fc
+    vitest.config.ts: dfb48fe51891615981407a6c219ad7a790c7755aecbdbdb81540ead852235f44
+    .codecrew/rulesets/svelte-feature/skills/feature-pattern/SKILL.md: 5ac498d9e8cac7b239c664c94211e0f5cfede64b1c63f0d203f87a7b1ae16906
