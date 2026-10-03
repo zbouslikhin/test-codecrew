@@ -2,5 +2,5 @@
 rulesets:
 - source: https://github.com/zbouslikhin/codecrew-rulesets.git
   name: svelte-feature
-  version: v1.0.0
+  version: v2.5.0
   path: .
